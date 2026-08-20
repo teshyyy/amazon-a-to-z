@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Amazon A to Z Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f6f7f8; color: #111; }
+    a { text-decoration: none; color: inherit; }
+
+    /* --- LOGIN PAGE STYLES --- */
+    #login-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f2f4f8; padding: 20px; position: relative; }
+    .login-card { background: #ffffff; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 40px; z-index: 10; }
+    .login-logo { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 30px; }
+    .login-logo .amazon { color: #000; }
+    .login-logo .atoz { color: #ff9900; margin-left: 4px; }
+    .login-card h1 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #888c8c; border-radius: 4px; font-size: 14px; outline: none; }
+    .form-group input:focus { border-color: #e77600; box-shadow: 0 0 3px 2px rgba(228,121,17,0.5); }
+    .forgot-link { display: block; font-size: 13px; color: #0066c0; text-decoration: none; margin-bottom: 20px; }
+    .btn-orange { width: 100%; background-color: #f0c14b; background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 4px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: #111; box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset; }
+    .btn-orange:hover { background: linear-gradient(to bottom, #f5d78e, #eeb933); }
+    .error-msg { color: #ba1a1a; font-size: 13px; margin-bottom: 16px; display: none; font-weight: 600; }
+    .divider { text-align: center; margin: 24px 0; position: relative; }
+    .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid #e2e5e8; z-index: 1; }
+    .divider span { background: #fff; padding: 0 10px; color: #777; font-size: 12px; position: relative; z-index: 2; }
+    .alt-login-list { list-style: none; margin-bottom: 30px; }
+    .alt-login-list li { border: 1px solid #e2e5e8; border-bottom: none; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .alt-login-list li:first-child { border-radius: 8px 8px 0 0; }
+    .alt-login-list li:last-child { border-bottom: 1px solid #e2e5e8; border-radius: 0 0 8px 8px; }
+    .alt-login-list li:hover { background: #f9f9f9; }
+    .alt-login-list .icon-placeholder { width: 24px; height: 24px; background: #eee; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; }
+    .not-sure-box { border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .not-sure-box h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .not-sure-box p { font-size: 12px; color: #555; margin-bottom: 12px; }
+    .not-sure-box button { background: #fff; border: 1px solid #d5d9d9; border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .login-footer { margin-top: 24px; font-size: 12px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 16px; }
+
+    /* --- DASHBOARD COMMON STYLES --- */
+    #dashboard-wrapper { display: none; }
+    header { background-color: #ffffff; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid #e2e5e8; position: sticky; top: 0; z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 16px; }
+    .hamburger { cursor: pointer; font-size: 24px; color: #111; }
+    .logo-container { display: flex; align-items: baseline; font-size: 20px; font-weight: 700; color: #111; cursor: pointer; }
+    .logo-container span.amazon { color: #000; }
+    .logo-container span.atoz { color: #ff9900; margin-left: 4px; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .help-btn { display: flex; align-items: center; gap: 4px; font-size: 14px; color: #333; cursor: pointer; font-weight: 500; }
+    .nav-icon { font-size: 22px; color: #333; cursor: pointer; }
+    .avatar-icon { width: 28px; height: 28px; border-radius: 50%; background: #ccc; cursor: pointer; object-fit: cover; }
+    .container { max-width: 1080px; margin: 24px auto; padding: 0 16px; }
+
+    /* Quick Links Tabs */
+    .quick-links { background: #ffffff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px 24px; display: grid; grid-template-columns: repeat(6, 1fr); text-align: center; margin-bottom: 24px; }
+    .quick-link-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; text-decoration: none; color: #111; position: relative; padding: 8px; border-radius: 8px; transition: background 0.2s; }
+    .quick-link-item:hover { background: #f0f2f2; }
+    .icon-wrapper { width: 44px; height: 44px; border-radius: 50%; background: #f0f2f2; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; position: relative; }
+    .icon-wrapper .material-symbols-outlined { font-size: 22px; color: #333; }
+    .quick-link-item span.label { font-size: 12px; font-weight: 500; color: #333; line-height: 1.3; }
+    .badge { position: absolute; top: -2px; right: -2px; background: #ba1a1a; color: white; font-size: 11px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    .app-view { display: none; }
+    .app-view.active { display: block; }
+
+    /* --- VIEW: HOME (CALENDAR) --- */
+    .dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+    .card { background: #ffffff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .calendar-header h3 { font-size: 15px; font-weight: 600; }
+    .nav-arrows { display: flex; gap: 8px; }
+    .nav-arrows span { cursor: pointer; font-size: 18px; color: #555; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 12px; }
+    .day-name { color: #777; font-weight: 600; font-size: 11px; padding-bottom: 6px; }
+    .cal-day { height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; position: relative; font-weight: 500; transition: background 0.2s; }
+    .cal-day:hover { opacity: 0.8; }
+    .cal-day.punch { background-color: #0b69c7; color: #ffffff; }
+    .cal-day.scheduled { background-color: #b7d6f6; color: #111; background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.4) 3px, rgba(255,255,255,0.4) 6px); }
+    .cal-day.attention { background-color: #ba1a1a; color: #ffffff; }
+    .cal-day.selected { outline: 2px solid #000; font-weight: 700; opacity: 1 !important; }
+    .cal-day.other-month { color: #aaa; }
+    .payday-dot { width: 4px; height: 4px; background: #111; border-radius: 50%; position: absolute; bottom: 2px; }
+    .calendar-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0f0f0; justify-content: center; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+    .legend-punch { background-color: #0b69c7; }
+    .legend-scheduled { background-color: #b7d6f6; }
+    .legend-attention { background-color: #ba1a1a; }
+    .legend-dot { width: 4px; height: 4px; border-radius: 50%; background: #111; }
+    
+    .right-column { display: flex; flex-direction: column; gap: 16px; }
+    .date-heading { font-size: 15px; font-weight: 700; color: #111; margin-bottom: -4px; }
+    .punch-card { background: #ffffff; border: 1px solid #e2e5e8; border-radius: 8px; overflow: hidden; }
+    .punch-card-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f2f2; }
+    .punch-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .punch-title span.info-icon { font-size: 16px; color: #555; cursor: pointer; }
+    .punch-header-right { display: flex; align-items: center; gap: 12px; }
+    .punch-header-right a { font-size: 13px; color: #0066c0; text-decoration: none; font-weight: 500; }
+    .punch-notice { padding: 10px 16px; font-size: 12px; color: #555; background-color: #fff; }
+    .timeline { padding: 8px 16px 16px 16px; position: relative; }
+    .timeline-item { display: flex; align-items: center; position: relative; padding: 10px 0; }
+    .timeline-marker { display: flex; flex-direction: column; align-items: center; width: 20px; margin-right: 12px; position: relative; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #e77600; z-index: 2; }
+    .dot.green { background: #007600; }
+    .line { position: absolute; top: 6px; width: 1px; height: 48px; background: #ddd; z-index: 1; }
+    .timeline-label { width: 80px; }
+    .timeline-label .type { font-size: 13px; font-weight: 600; color: #111; }
+    .timeline-label .date { font-size: 11px; color: #777; }
+    .timeline-time { flex: 1; font-size: 14px; font-weight: 700; text-align: center; }
+    .timeline-action { color: #555; cursor: pointer; font-size: 18px; }
+    .card-footer-link { padding: 14px 16px; border-top: 1px solid #f0f2f2; font-size: 13px; font-weight: 600; color: #111; cursor: pointer; }
+    .card-footer-link:hover { background: #fcfcfc; }
+
+    /* --- VIEW: FIND SHIFTS --- */
+    .find-shifts-layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+    .horizontal-cal { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .h-cal-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #d5d9d9; border-radius: 4px; cursor: pointer; background: #fff; }
+    .h-cal-day { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; height: 48px; border: 1px solid #d5d9d9; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; }
+    .h-cal-day.active { background: #111; color: #fff; border-color: #111; font-weight: 700; }
+    .shifts-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 13px; font-weight: 700; }
+    .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #333; }
+    .toggle-switch { width: 34px; height: 18px; background: #ff9900; border-radius: 12px; position: relative; cursor: pointer; }
+    .toggle-knob { width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 2px; right: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .found-shift-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; margin-bottom: 12px; position: relative; }
+    .found-shift-card::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #e77600; border-radius: 8px 0 0 8px; }
+    .fs-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .fs-rate { font-size: 12px; font-weight: 700; background: #f0f2f2; padding: 2px 6px; border-radius: 4px; }
+    .fs-sub { font-size: 12px; color: #555; margin-bottom: 12px; }
+    .fs-warning { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; margin-bottom: 4px; }
+    .fs-warning .material-symbols-outlined { font-size: 16px; color: #e77600; }
+    .fs-warning.disabled .material-symbols-outlined { color: #888; }
+    .btn-details { position: absolute; bottom: 16px; right: 16px; background: #fff; border: 1px solid #d5d9d9; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .filter-sidebar { background: #fff; padding: 0; }
+    .filter-header { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+    .filter-reset { font-size: 12px; font-weight: 400; color: #0066c0; cursor: pointer; }
+    .filter-section { margin-bottom: 20px; border-top: 1px solid #f0f2f2; padding-top: 16px; }
+    .filter-section-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+    .time-inputs { display: flex; align-items: center; gap: 8px; }
+    .time-inputs input { width: 100%; padding: 8px; border: 1px solid #888c8c; border-radius: 4px; font-size: 13px; }
+    .time-inputs span { font-size: 12px; color: #555; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 10px; color: #111; }
+    .checkbox-item input[type="checkbox"] { accent-color: #e77600; width: 16px; height: 16px; }
+    .checkbox-item.indent { margin-left: 24px; }
+
+    /* --- VIEW: VIEW NEWS --- */
+    .news-header { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+    .news-header span { color: #e77600; }
+    .news-search { display: flex; align-items: center; background: #fff; border: 1px solid #888c8c; border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; }
+    .news-search input { border: none; outline: none; width: 100%; font-size: 14px; margin-left: 8px; }
+    .news-favs { font-size: 13px; color: #555; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .news-favs a { color: #0066c0; text-decoration: underline; cursor: pointer; }
+    .news-favs .add-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+    .news-quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .nqa-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .nqa-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .nqa-card p { font-size: 11px; color: #555; }
+    .news-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .n-tab { padding: 6px 16px; border-radius: 20px; border: 1px solid #d5d9d9; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .n-tab.active { background: #111; color: #fff; border-color: #111; }
+    .news-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+    .main-news-card { background: #111; color: #fff; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+    .main-news-img { width: 100%; height: 240px; background: #222; display: flex; flex-wrap: wrap; }
+    .main-news-content { padding: 16px; }
+    .main-news-content .meta { font-size: 11px; color: #aaa; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .main-news-content h3 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+    .main-news-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #ccc; }
+    .main-news-footer div { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .shoutout-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .so-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .so-avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; }
+    .so-meta h4 { font-size: 13px; font-weight: 700; }
+    .so-meta p { font-size: 11px; color: #555; }
+    .so-body { display: flex; gap: 16px; align-items: center; }
+    .so-smile { width: 120px; height: 80px; background: #f6f7f8; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+    .so-text { font-size: 13px; flex: 1; }
+    .so-footer { margin-top: 12px; font-size: 13px; color: #555; display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
+    .right-news-col .digest-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .digest-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .digest-badge { background: #f0f2f2; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+    .top-stories-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; }
+    .ts-header { padding: 16px; font-size: 15px; font-weight: 700; border-bottom: 1px solid #f0f2f2; }
+    .ts-item { padding: 16px; border-bottom: 1px solid #f0f2f2; display: flex; align-items: center; gap: 16px; }
+    .ts-item:last-child { border-bottom: none; }
+    .ts-icon { width: 48px; height: 48px; background: #f6f7f8; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .ts-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .ts-content { flex: 1; }
+    .ts-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .ts-actions { display: flex; justify-content: space-between; color: #555; }
+    .ts-actions span { cursor: pointer; font-size: 18px; }
+
+    /* --- VIEW: REQUEST TIME OFF --- */
+    .rto-container { max-width: 600px; margin: 0 auto; }
+    .rto-breadcrumb { font-size: 12px; color: #e77600; margin-bottom: 16px; text-align: center; }
+    .rto-breadcrumb span { color: #555; }
+    .rto-title { text-align: center; font-size: 18px; font-weight: 700; margin-bottom: 24px; }
+    .rto-alert { background: #e8f4fc; border-left: 4px solid #0066c0; padding: 12px 16px; border-radius: 4px; font-size: 13px; display: flex; gap: 12px; margin-bottom: 24px; color: #111; }
+    .rto-alert .material-symbols-outlined { color: #0066c0; font-size: 18px; }
+    .rto-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .rto-option { padding: 16px; border-bottom: 1px solid #f0f2f2; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .rto-option:last-child { border-bottom: none; }
+    .rto-option h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .rto-option p { font-size: 13px; font-weight: 600; color: #111; }
+    .rto-option span { color: #e77600; font-size: 20px; }
+    .rto-dls { padding: 20px 16px; }
+    .rto-dls h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .rto-dls p { font-size: 13px; color: #555; margin-bottom: 16px; }
+    .rto-dls-link { padding: 16px; border-top: 1px solid #f0f2f2; font-size: 13px; color: #111; cursor: pointer; }
+
+    /* --- VIEW: MYVOICE --- */
+    .mv-tabs { display: flex; gap: 24px; border-bottom: 1px solid #e2e5e8; margin-bottom: 24px; font-size: 14px; font-weight: 600; }
+    .mv-tab { padding-bottom: 8px; cursor: pointer; color: #555; }
+    .mv-tab.active { color: #111; border-bottom: 2px solid #111; }
+    .mv-toolbar { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
+    .mv-select { padding: 8px 12px; border: 1px solid #888c8c; border-radius: 4px; font-size: 13px; background: #fff; outline: none; }
+    .mv-search { flex: 1; display: flex; align-items: center; background: #fff; border: 1px solid #888c8c; border-radius: 4px; padding: 8px 12px; }
+    .mv-search input { border: none; outline: none; width: 100%; font-size: 13px; margin-left: 8px; }
+    .btn-filter { padding: 8px 16px; border: 1px solid #888c8c; border-radius: 20px; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-new-comment { padding: 8px 16px; border: none; border-radius: 20px; background: #e77600; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .mv-comment-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .mv-c-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .mv-user { display: flex; gap: 12px; align-items: center; }
+    .mv-avatar { width: 32px; height: 32px; background: #e2e5e8; border-radius: 4px; }
+    .mv-user-info h4 { font-size: 13px; font-weight: 700; }
+    .mv-status { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #007600; }
+    .mv-c-body { font-size: 13px; line-height: 1.5; margin-bottom: 16px; }
+    .mv-c-actions { display: flex; gap: 16px; font-size: 13px; color: #555; margin-bottom: 16px; }
+    .mv-response { background: #f6f7f8; border-radius: 8px; padding: 16px; }
+    .mv-r-label { font-size: 12px; font-weight: 700; margin-bottom: 12px; }
+    .mv-r-user { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .mv-r-user-info h4 { font-size: 13px; font-weight: 700; }
+    .mv-r-user-info p { font-size: 11px; color: #555; }
+    .mv-r-body { font-size: 13px; line-height: 1.5; margin-bottom: 16px; }
+    .mv-r-helpful { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 600; }
+    .mv-btn-yesno { display: flex; align-items: center; gap: 4px; border: 1px solid #d5d9d9; background: #fff; padding: 4px 12px; border-radius: 20px; cursor: pointer; }
+
+    /* --- VIEW: AMAZON LEARN --- */
+    .al-hero { background: #e8f4fc; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 32px; margin-bottom: 24px; position: relative; }
+    .al-hero h1 { font-size: 24px; font-weight: 700; text-align: center; }
+    .al-hero p { font-size: 14px; color: #555; text-align: center; margin-top: 4px; }
+    .al-alerts { margin-bottom: 24px; }
+    .al-alert { background: #e8f4fc; border-left: 4px solid #0066c0; padding: 12px 16px; border-radius: 4px; font-size: 13px; display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; color: #111; }
+    .al-alert-content { display: flex; gap: 12px; font-weight: 600; }
+    .al-alert-content .material-symbols-outlined { color: #0066c0; font-size: 18px; }
+    .al-tabs { border-bottom: 1px solid #e2e5e8; margin-bottom: 24px; display: flex; gap: 24px; font-size: 14px; font-weight: 600; }
+    .al-tab { padding-bottom: 8px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 6px; }
+    .al-tab.active { color: #111; border-bottom: 2px solid #e77600; }
+    .al-badge { background: #ba1a1a; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+    .al-badge.gray { background: #777; }
+    .al-course-card { background: #fff; border: 1px solid #e2e5e8; border-radius: 8px; padding: 16px; display: flex; gap: 16px; align-items: center; }
+    .al-c-img { width: 120px; height: 80px; background: #333; border-radius: 4px; position: relative; overflow: hidden; }
+    .al-c-img span { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-weight: 600; text-align: center; padding: 4px; }
+    .al-c-info { flex: 1; }
+    .al-c-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .al-c-info p { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .al-c-status { font-size: 12px; font-weight: 600; }
+    .al-c-right { display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+    .al-past-due { background: #fce8e8; color: #ba1a1a; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .al-btn-actions { border: 1px solid #d5d9d9; background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN PAGE -->
+  <div id="login-wrapper">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="amazon">amazon</span><span class="atoz">a to z</span>
+      </div>
+      <h1>Log in</h1>
+      <div class="error-msg" id="error-msg">Incorrect username or password.</div>
+      <div class="form-group">
+        <label>Enter your Amazon alias *</label>
+        <input type="text" id="username" placeholder="Enter your Login" />
+      </div>
+      <div class="form-group" id="password-group" style="display: none;">
+        <label>Enter your Password *</label>
+        <input type="password" id="password" placeholder="Enter your Password" />
+      </div>
+      <a href="#" class="forgot-link">Forgot alias?</a>
+      <button class="btn-orange" id="login-btn" onclick="handleLogin()">Continue</button>
+      <div class="divider"><span>or</span></div>
+      <ul class="alt-login-list">
+        <li>
+          <div style="display:flex; align-items:center;">
+            <div class="icon-placeholder"><span class="material-symbols-outlined" style="font-size:16px; color:#555;">local_shipping</span></div>
+            I deliver packages to customers
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px; color:#888;">chevron_right</span>
+        </li>
+        <li>
+          <div style="display:flex; align-items:center;">
+            <div class="icon-placeholder"><span class="material-symbols-outlined" style="font-size:16px; color:#e099b2;">celebration</span></div>
+            I accepted a job offer from my recruiter
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px; color:#888;">chevron_right</span>
+        </li>
+        <li>
+          <div style="display:flex; align-items:center;">
+            <div class="icon-placeholder"><span class="material-symbols-outlined" style="font-size:16px; color:#555;">headset_mic</span></div>
+            I'm a customer service associate (CSGO)
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px; color:#888;">chevron_right</span>
+        </li>
+        <li>
+          <div style="display:flex; align-items:center;">
+            <div class="icon-placeholder"><span class="material-symbols-outlined" style="font-size:16px; color:#53b89e;">person</span></div>
+            I'm an external user needing Learn access
+          </div>
+          <span class="material-symbols-outlined" style="font-size:18px; color:#888;">chevron_right</span>
+        </li>
+      </ul>
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Not sure?</p>
+      <div class="not-sure-box">
+        <div>
+          <h3>Log in to the Amazon A to Z public experience</h3>
+          <p>Review your offer • Discover news</p>
+          <button>Log In</button>
+        </div>
+        <div style="width: 40px; height: 50px; background:#eee; border-radius:4px; display:flex; align-items:center; justify-content:center;">
+          <span class="material-symbols-outlined" style="color:#aaa;">smartphone</span>
+        </div>
+      </div>
+    </div>
+    <div class="login-footer">
+      <span class="material-symbols-outlined" style="font-size:16px;">language</span> Change language
+      <span style="color:#ccc;">|</span>
+      <span class="material-symbols-outlined" style="font-size:16px;">help_outline</span> Get help
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD -->
+  <div id="dashboard-wrapper">
+    <header>
+      <div class="nav-left">
+        <span class="material-symbols-outlined hamburger">menu</span>
+        <div class="logo-container" onclick="showView('view-home')">
+          <span class="amazon">amazon</span>
+          <span class="atoz">a to z</span>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="help-btn">
+          <span class="material-symbols-outlined" style="font-size: 18px;">help</span> Help
+          <span class="material-symbols-outlined" style="font-size: 16px;">keyboard_arrow_down</span>
+        </div>
+        <span class="material-symbols-outlined nav-icon">notifications</span>
+        <img src="https://via.placeholder.com/28" alt="Profile" class="avatar-icon" />
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Quick Links Tabs -->
+      <div class="quick-links">
+        <div class="quick-link-item" onclick="showView('view-find-shifts')">
+          <div class="icon-wrapper"><span class="material-symbols-outlined">payments</span></div>
+          <span class="label">Find shifts</span>
+        </div>
+        <div class="quick-link-item" onclick="showView('view-news')">
+          <div class="icon-wrapper"><span class="material-symbols-outlined">newspaper</span></div>
+          <span class="label">View News</span>
+        </div>
+        <div class="quick-link-item" onclick="showView('view-vto')">
+          <div class="icon-wrapper"><span class="material-symbols-outlined">schedule</span></div>
+          <span class="label">VTO</span>
+        </div>
+        <div class="quick-link-item" onclick="showView('view-time-off')">
+          <div class="icon-wrapper"><span class="material-symbols-outlined">work</span></div>
+          <span class="label">Request Time Off</span>
+        </div>
+        <div class="quick-link-item" onclick="showView('view-learn')">
+          <div class="icon-wrapper">
+            <span class="material-symbols-outlined">school</span>
+            <div class="badge">1</div>
+          </div>
+          <span class="label">Amazon Learn<br>(formerly KNet)</span>
+        </div>
+        <div class="quick-link-item" onclick="showView('view-my-voice')">
+          <div class="icon-wrapper"><span class="material-symbols-outlined">mic</span></div>
+          <span class="label">MyVoice</span>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT VIEWS -->
+      
+      <!-- 1. VIEW: HOME (CALENDAR) -->
+      <div id="view-home" class="app-view active">
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="calendar-header">
+              <h3>August 2026</h3>
+              <div class="nav-arrows">
+                <span class="material-symbols-outlined">chevron_left</span>
+                <span class="material-symbols-outlined">chevron_right</span>
+              </div>
+            </div>
+            <div class="calendar-grid">
+              <div class="day-name">SUN</div><div class="day-name">MON</div><div class="day-name">TUE</div><div class="day-name">WED</div><div class="day-name">THU</div><div class="day-name">FRI</div><div class="day-name">SAT</div>
+              <div class="cal-day other-month punch" data-day="Jul_26" onclick="selectDay('Jul_26')">26</div>
+              <div class="cal-day scheduled">27</div>
+              <div class="cal-day other-month punch" data-day="Jul_28" onclick="selectDay('Jul_28')">28</div>
+              <div class="cal-day other-month">29</div>
+              <div class="cal-day other-month">30</div>
+              <div class="cal-day other-month">31</div>
+              <div class="cal-day punch" data-day="Aug_1" onclick="selectDay('Aug_1')">1</div>
+              
+              <div class="cal-day punch" data-day="Aug_2" onclick="selectDay('Aug_2')">2</div>
+              <div class="cal-day punch" data-day="Aug_3" onclick="selectDay('Aug_3')">3</div>
+              <div class="cal-day punch" data-day="Aug_4" onclick="selectDay('Aug_4')">4</div>
+              <div class="cal-day punch" data-day="Aug_5" onclick="selectDay('Aug_5')">5</div>
+              <div class="cal-day">6</div>
+              <div class="cal-day">7<div class="payday-dot"></div></div>
+              <div class="cal-day punch" data-day="Aug_8" onclick="selectDay('Aug_8')">8</div>
+              
+              <div class="cal-day punch" data-day="Aug_9" onclick="selectDay('Aug_9')">9</div>
+              <div class="cal-day punch" data-day="Aug_10" onclick="selectDay('Aug_10')">10</div>
+              <div class="cal-day punch" data-day="Aug_11" onclick="selectDay('Aug_11')">11</div>
+              <div class="cal-day">12</div>
+              <div class="cal-day">13</div>
+              <div class="cal-day">14<div class="payday-dot"></div></div>
+              <div class="cal-day punch" data-day="Aug_15" onclick="selectDay('Aug_15')">15</div>
+              
+              <div class="cal-day punch" data-day="Aug_16" onclick="selectDay('Aug_16')">16</div>
+              <div class="cal-day punch" data-day="Aug_17" onclick="selectDay('Aug_17')">17</div>
+              <div class="cal-day punch" data-day="Aug_18" onclick="selectDay('Aug_18')">18</div>
+              <div class="cal-day punch" data-day="Aug_19" onclick="selectDay('Aug_19')">19</div>
+              <div class="cal-day punch selected" data-day="Aug_20" onclick="selectDay('Aug_20')">20<div class="payday-dot"></div></div>
+              <div class="cal-day">21<div class="payday-dot"></div></div>
+              <div class="cal-day scheduled">22</div>
+              
+              <div class="cal-day scheduled">23</div><div class="cal-day scheduled">24</div><div class="cal-day scheduled">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28<div class="payday-dot"></div></div><div class="cal-day scheduled">29</div>
+              
+              <div class="cal-day scheduled">30</div><div class="cal-day scheduled">31</div><div class="cal-day scheduled">1</div><div class="cal-day other-month">2</div><div class="cal-day other-month">3</div><div class="cal-day other-month">4<div class="payday-dot"></div></div><div class="cal-day scheduled">5</div>
+            </div>
+            <div class="calendar-legend">
+              <div class="legend-item"><div class="legend-color legend-punch"></div> Punches</div>
+              <div class="legend-item"><div class="legend-color legend-scheduled"></div> Scheduled shifts</div>
+              <div class="legend-item"><div class="legend-dot"></div> Payday</div>
+            </div>
+          </div>
+          <div class="right-column" id="right-panel-content">
+            <!-- Populated by JS on load/click -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. VIEW: FIND SHIFTS -->
+      <div id="view-find-shifts" class="app-view">
+        <div class="find-shifts-layout">
+          <div>
+            <div class="horizontal-cal">
+              <div class="h-cal-btn"><span class="material-symbols-outlined">chevron_left</span></div>
+              <div class="h-cal-day">Thursday<br>Aug 20</div>
+              <div class="h-cal-day active">Friday<br>Aug 21</div>
+              <div class="h-cal-day">Saturday<br>Aug 22</div>
+              <div class="h-cal-day">Sunday<br>Aug 23</div>
+              <div class="h-cal-day">Monday<br>Aug 24</div>
+              <div class="h-cal-day">Tuesday<br>Aug 25</div>
+              <div class="h-cal-day">Wednesday<br>Aug 26</div>
+              <div class="h-cal-day">Thursday<br>Aug 27</div>
+              <div class="h-cal-btn"><span class="material-symbols-outlined">chevron_right</span></div>
+            </div>
+            
+            <div class="shifts-list-header">
+              <span>Your scheduled shifts Fri, Aug 21 (0)</span>
+              <div class="toggle-row">
+                <span>Show all pay</span>
+                <div class="toggle-switch"><div class="toggle-knob"></div></div>
+              </div>
+            </div>
+            
+            <div class="found-shift-card">
+              <div class="fs-header">
+                <span>12:50am-1:50am CDT <span style="color:#555;font-weight:400;">(1hr)</span></span>
+                <span class="fs-rate">$21/hr</span>
+              </div>
+              <div class="fs-sub">DUA3<br>CYCLE_1</div>
+              <div class="fs-warning"><span class="material-symbols-outlined">warning</span> This shift cannot be dropped once added.</div>
+              <div class="fs-warning disabled"><span class="material-symbols-outlined">do_not_disturb</span> Exceeds the limit for days in a row</div>
+              <button class="btn-details">View Details</button>
+            </div>
+            
+            <div class="found-shift-card">
+              <div class="fs-header">
+                <span>1:50am-9:25am CDT <span style="color:#555;font-weight:400;">(7hrs 35mins)</span></span>
+                <span class="fs-rate">$21.00/hr</span>
+              </div>
+              <div class="fs-sub">DUA3<br>SORT_1</div>
+              <div class="fs-warning"><span class="material-symbols-outlined">warning</span> This shift cannot be dropped once added.</div>
+              <div class="fs-warning disabled"><span class="material-symbols-outlined">do_not_disturb</span> 3 ineligible reasons</div>
+              <button class="btn-details">View Details</button>
+            </div>
+            
+            <div class="found-shift-card">
+              <div class="fs-header">
+                <span>1:50am-9:00am CDT <span style="color:#555;font-weight:400;">(7hrs 10mins)</span></span>
+                <span class="fs-rate">$21/hr</span>
+              </div>
+              <div class="fs-sub">DUA3<br>CYCLE_1</div>
+              <div class="fs-warning"><span class="material-symbols-outlined">warning</span> This shift cannot be dropped once added.</div>
+              <div class="fs-warning disabled"><span class="material-symbols-outlined">do_not_disturb</span> 2 ineligible reasons</div>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+          
+          <div class="filter-sidebar">
+            <div class="filter-header">
+              <span>Filter shifts</span>
+              <span class="filter-reset">Reset</span>
+            </div>
+            
+            <div class="filter-section" style="border-top:none; padding-top:0;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span style="font-size:12px;font-weight:700;">Start time</span>
+                <span style="font-size:12px;font-weight:700;">End time</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px; color:#555;">
+                <span style="font-size:11px;">(e.g., 06:30 am)</span>
+                <span style="font-size:11px;">(e.g., 07:30 pm)</span>
+              </div>
+              <div class="time-inputs">
+                <input type="text" value="12:00 am" />
+                <span>and</span>
+                <input type="text" value="12:00 am" />
+              </div>
+            </div>
+            
+            <div class="filter-section">
+              <div class="filter-section-title">Job Type</div>
+              <div class="checkbox-item"><input type="checkbox" checked> CYCLE_1</div>
+              <div class="checkbox-item"><input type="checkbox" checked> PFSD</div>
+              <div class="checkbox-item"><input type="checkbox" checked> READY</div>
+              <div class="checkbox-item"><input type="checkbox" checked> RTS</div>
+              <div class="checkbox-item"><input type="checkbox" checked> SORT_1</div>
+            </div>
+            
+            <div class="filter-section">
+              <div class="filter-section-title">Locations (1)</div>
+              <div class="checkbox-item"><input type="checkbox" checked disabled> DUA3</div>
+            </div>
+            
+            <div class="filter-section">
+              <div class="filter-section-title">Unavailable Shifts</div>
+              <div class="checkbox-item"><input type="checkbox" checked> All Unavailable Shifts</div>
+              <div class="checkbox-item indent"><input type="checkbox" checked> Exceed my hours cap</div>
+              <div class="checkbox-item indent"><input type="checkbox" checked> Overlaps with a scheduled shift</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. VIEW: VIEW NEWS -->
+      <div id="view-news" class="app-view">
+        <div class="news-header">Good afternoon, <span>Ritesh!</span></div>
+        <div class="news-search">
+          <span class="material-symbols-outlined" style="color:#555;">search</span>
+          <input type="text" placeholder="Search resources" />
+        </div>
+        <div class="news-favs">
+          Favorites: <a href="#">MyVoice</a> <a href="#">Shout-Outs</a> | 
+          <div class="add-btn"><span class="material-symbols-outlined" style="font-size:16px;">add</span></div>
+        </div>
+        
+        <div class="news-quick-actions">
+          <div class="nqa-card">
+            <div><h4>View schedule</h4><p>See your schedule or find shifts</p></div>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </div>
+          <div class="nqa-card">
+            <div><h4>Request time off</h4><p>Submit requests or view your PTO</p></div>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </div>
+          <div class="nqa-card">
+            <div><h4>Pay</h4><p>View past or upcoming pay details</p></div>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </div>
+          <div class="nqa-card">
+            <div><h4>A to Z resources</h4><p>View additional resources</p></div>
+            <span class="material-symbols-outlined">chevron_right</span>
+          </div>
+        </div>
+        
+        <div class="news-tabs">
+          <div class="n-tab active">All</div>
+          <div class="n-tab">My News</div>
+          <div class="n-tab">My Site</div>
+          <div class="n-tab">For you</div>
+          <div class="n-tab">Saved</div>
+        </div>
+        
+        <div class="news-layout">
+          <div>
+            <div class="main-news-card">
+              <div class="main-news-img" style="background:#2b3a4a; display:flex; flex-wrap:wrap;">
+                <div style="width:33%;height:50%;background:#3c4d5c;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#a8c439;font-size:48px;">local_florist</span></div>
+                <div style="width:33%;height:50%;background:#2b3a4a;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#5bbdf2;font-size:48px;">medication</span></div>
+                <div style="width:34%;height:50%;background:#3c4d5c;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#f2c94c;font-size:48px;">fitness_center</span></div>
+                <div style="width:33%;height:50%;background:#2b3a4a;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#a8c439;font-size:48px;">spa</span></div>
+                <div style="width:33%;height:50%;background:#3c4d5c;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#5bbdf2;font-size:48px;">medical_services</span></div>
+                <div style="width:34%;height:50%;background:#2b3a4a;display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#f2c94c;font-size:48px;">format_quote</span></div>
+              </div>
+              <div class="main-news-content">
+                <div class="meta">
+                  <span>News • 24 hours ago</span>
+                  <div style="display:flex; gap:8px;">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">pause</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                  </div>
+                </div>
+                <h3>Your Benefits Start on Day 1</h3>
+                <div class="main-news-footer">
+                  <div><span class="material-symbols-outlined">favorite_border</span> 1.3K Likes</div>
+                  <div><span class="material-symbols-outlined">bookmark_border</span> Save</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="shoutout-card">
+              <div class="so-header">
+                <div class="so-avatar"><img src="https://via.placeholder.com/32" style="border-radius:50%;" /></div>
+                <div class="so-meta"><h4>Shout-Out <span>to you from Amazon</span></h4><p>1 day ago</p></div>
+              </div>
+              <div class="so-body">
+                <div class="so-smile"><span class="amazon" style="font-weight:700;font-size:24px;">amazon</span><span class="atoz" style="color:#ff9900;font-weight:700;font-size:24px;margin-left:2px;">arrow</span></div>
+                <div class="so-text">Thank you for your flexibility and picking up the extra shifts. We know we can count on you when the team needs it the most.</div>
+              </div>
+              <div class="so-footer"><span class="material-symbols-outlined" style="font-size:18px;">favorite_border</span> Like</div>
+            </div>
+          </div>
+          
+          <div class="right-news-col">
+            <div class="digest-card">
+              <div class="digest-title">
+                <span class="material-symbols-outlined" style="color:#8f48eb;">auto_awesome</span> Digest
+                <span class="digest-badge">Beta</span>
+              </div>
+              <span class="material-symbols-outlined" style="color:#555;cursor:pointer;">more_vert</span>
+            </div>
+            
+            <div class="top-stories-card">
+              <div class="ts-header">More top stories</div>
+              
+              <div class="ts-item">
+                <div class="ts-icon"><span class="material-symbols-outlined" style="color:#ff9900;font-size:32px;">smile</span></div>
+                <div class="ts-content">
+                  <h4>Payslip Available</h4>
+                  <div class="ts-actions"><span class="material-symbols-outlined">favorite_border</span><span class="material-symbols-outlined">bookmark_border</span></div>
+                </div>
+              </div>
+              
+              <div class="ts-item">
+                <div class="ts-icon"><span class="material-symbols-outlined" style="color:#ff9900;font-size:32px;">smile</span></div>
+                <div class="ts-content">
+                  <h4>New Message added for: 120930029</h4>
+                  <div class="ts-actions"><span class="material-symbols-outlined">favorite_border</span><span class="material-symbols-outlined">bookmark_border</span></div>
+                </div>
+              </div>
+              
+              <div class="ts-item">
+                <div class="ts-icon" style="background:#ccc;"></div>
+                <div class="ts-content">
+                  <h4>What's Your Vest Life Moment?</h4>
+                  <div class="ts-actions">
+                    <span style="font-size:12px;display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">favorite_border</span> 678</span>
+                    <span class="material-symbols-outlined">bookmark_border</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="ts-item">
+                <div class="ts-icon"><span class="material-symbols-outlined" style="color:#ff9900;font-size:32px;">smile</span></div>
+                <div class="ts-content">
+                  <h4>Low UPT Balance</h4>
+                  <div class="ts-actions"><span class="material-symbols-outlined">favorite_border</span><span class="material-symbols-outlined">bookmark_border</span></div>
+                </div>
+              </div>
+              
+              <div class="ts-item">
+                <div class="ts-icon"><span class="material-symbols-outlined" style="color:#ff9900;font-size:32px;">smile</span></div>
+                <div class="ts-content">
+                  <h4>Attachment status for Case Number: 120930029</h4>
+                  <div class="ts-actions"><span class="material-symbols-outlined">favorite_border</span><span class="material-symbols-outlined">bookmark_border</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. VIEW: REQUEST TIME OFF -->
+      <div id="view-time-off" class="app-view">
+        <div class="rto-container">
+          <div class="rto-breadcrumb">Time off & leave <span>> Request time off & leave</span></div>
+          <div class="rto-title">Request time off & leave</div>
+          
+          <div class="rto-alert">
+            <span class="material-symbols-outlined">info</span>
+            <div>Due to scheduled maintenance on a service used by A to Z Time Off, you may experience a problem with your request at this time. In the event of an error, please try again later.</div>
+          </div>
+          
+          <div class="rto-card">
+            <div class="rto-option">
+              <div>
+                <h4>Personal Time</h4>
+                <p>1 hr 10 mins available</p>
+              </div>
+              <span class="material-symbols-outlined">chevron_right</span>
+            </div>
+            <div class="rto-option">
+              <div>
+                <h4>See More</h4>
+                <p>Explore more time off and leave of absence options</p>
+              </div>
+              <span class="material-symbols-outlined">chevron_right</span>
+            </div>
+          </div>
+          
+          <div class="rto-card">
+            <div class="rto-dls">
+              <h3>Disability and Leave Services (DLS)</h3>
+              <p>Do you need a leave of absence or workplace accommodation?</p>
+            </div>
+            <div class="rto-dls-link">
+              Request a leave or accommodation
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. VIEW: MYVOICE -->
+      <div id="view-my-voice" class="app-view">
+        <div class="mv-tabs">
+          <div class="mv-tab active">MyVoice</div>
+          <div class="mv-tab">Home</div>
+        </div>
+        
+        <div class="mv-toolbar">
+          <select class="mv-select">
+            <option>DUA3 VOA</option>
+          </select>
+          <div class="mv-search">
+            <span class="material-symbols-outlined" style="color:#555;">search</span>
+            <input type="text" placeholder="Search comments by keyword, author, etc." />
+          </div>
+          <button class="btn-filter">All filters</button>
+          <button class="btn-new-comment"><span class="material-symbols-outlined" style="font-size:18px;">add</span> New Comment</button>
+        </div>
+        
+        <!-- Comment 1 -->
+        <div class="mv-comment-card">
+          <div class="mv-c-header">
+            <div class="mv-user">
+              <div class="mv-avatar"></div>
+              <div class="mv-user-info">
+                <h4>Daniel rdidanie@ • 9h</h4>
+              </div>
+            </div>
+            <div class="mv-status"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Closed</div>
+          </div>
+          <div class="mv-c-body">It's really hot inside the building, especially during Pick & Stage</div>
+          <div class="mv-c-actions"><span class="material-symbols-outlined" style="font-size:18px;cursor:pointer;">thumb_up</span> 2</div>
+          <div class="mv-response">
+            <div class="mv-r-label">Response</div>
+            <div class="mv-r-user">
+              <div class="mv-avatar"></div>
+              <div class="mv-r-user-info">
+                <h4>Sam kangsam@ • 1h</h4>
+                <p>Operations Manager</p>
+              </div>
+            </div>
+            <div class="mv-r-body">Thank you so much for the comment, we are still pending repair for one fan at L/M cluster which is crucial for Pick and Stage. Keep in mind, we have popsicles and sports drink mix available for mitigating heat injury.</div>
+            <div class="mv-r-helpful">
+              Was this response helpful? 
+              <div class="mv-btn-yesno"><span class="material-symbols-outlined" style="font-size:16px;">thumb_up</span> Yes</div>
+              <div class="mv-btn-yesno"><span class="material-symbols-outlined" style="font-size:16px;">thumb_down</span> No</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. VIEW: AMAZON LEARN / VTO -->
+      <div id="view-learn" class="app-view">
+        <div class="al-hero">
+          <div>
+            <h1><span class="amazon" style="color:#000;">amazon</span><span style="color:#00a8e1;">learn</span></h1>
+            <p>Self-paced trainings, courses, learning paths, and more</p>
+          </div>
+        </div>
+        
+        <div class="al-alerts">
+          <div class="al-alert">
+            <div class="al-alert-content">
+              <span class="material-symbols-outlined">info</span>
+              What's new: Learn now supports self-service unenrollment for self-registered trainings. Required and assigned trainings cannot be unenrolled.
+            </div>
+            <span class="material-symbols-outlined" style="cursor:pointer;font-size:16px;">close</span>
+          </div>
+          <div class="al-alert">
+            <div class="al-alert-content">
+              <span class="material-symbols-outlined">info</span>
+              You can only launch trainings during on-schedule hours.
+            </div>
+          </div>
+        </div>
+        
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Your Learning</h3>
+        <div class="al-tabs">
+          <div class="al-tab active">Required <span class="al-badge">1</span></div>
+          <div class="al-tab">Optional <span class="al-badge gray">0</span></div>
+          <div class="al-tab">Completed <span class="al-badge gray">5</span></div>
+        </div>
+        
+        <div class="al-course-card">
+          <div class="al-c-img">
+            <span>Training</span>
+          </div>
+          <div class="al-c-info">
+            <h4>WorkingWell Huddle Gripping and Handling II Generic (English)</h4>
+            <p>Online class • Learn • 5 min • English (United States)</p>
+            <div class="al-c-status">Not started</div>
+          </div>
+          <div class="al-c-right">
+            <div class="al-past-due"><span class="material-symbols-outlined" style="font-size:14px;">error</span> Past due: Mar 28, 2026</div>
+            <button class="al-btn-actions">Actions <span class="material-symbols-outlined" style="font-size:16px;">keyboard_arrow_down</span></button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="view-vto" class="app-view">
+        <div class="al-hero">
+          <div>
+            <h1><span class="amazon" style="color:#000;">amazon</span><span style="color:#00a8e1;">learn</span></h1>
+            <p>Self-paced trainings, courses, learning paths, and more</p>
+          </div>
+        </div>
+        
+        <div class="al-alerts">
+          <div class="al-alert">
+            <div class="al-alert-content">
+              <span class="material-symbols-outlined">info</span>
+              What's new: Learn now supports self-service unenrollment for self-registered trainings. Required and assigned trainings cannot be unenrolled.
+            </div>
+            <span class="material-symbols-outlined" style="cursor:pointer;font-size:16px;">close</span>
+          </div>
+          <div class="al-alert">
+            <div class="al-alert-content">
+              <span class="material-symbols-outlined">info</span>
+              You can only launch trainings during on-schedule hours.
+            </div>
+          </div>
+        </div>
+        
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Your Learning</h3>
+        <div class="al-tabs">
+          <div class="al-tab active">Required <span class="al-badge">1</span></div>
+          <div class="al-tab">Optional <span class="al-badge gray">0</span></div>
+          <div class="al-tab">Completed <span class="al-badge gray">5</span></div>
+        </div>
+        
+        <div class="al-course-card">
+          <div class="al-c-img">
+            <span>Training</span>
+          </div>
+          <div class="al-c-info">
+            <h4>WorkingWell Huddle Gripping and Handling II Generic (English)</h4>
+            <p>Online class • Learn • 5 min • English (United States)</p>
+            <div class="al-c-status">Not started</div>
+          </div>
+          <div class="al-c-right">
+            <div class="al-past-due"><span class="material-symbols-outlined" style="font-size:14px;">error</span> Past due: Mar 28, 2026</div>
+            <button class="al-btn-actions">Actions <span class="material-symbols-outlined" style="font-size:16px;">keyboard_arrow_down</span></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // --- LOGIN LOGIC ---
+    let step = 1;
+    function handleLogin() {
+      const usernameInput = document.getElementById('username').value;
+      const errorMsg = document.getElementById('error-msg');
+      const passGroup = document.getElementById('password-group');
+      const btn = document.getElementById('login-btn');
+
+      errorMsg.style.display = 'none';
+
+      if (step === 1) {
+        if (usernameInput === 'rithbhan') {
+          passGroup.style.display = 'block';
+          btn.innerText = 'Log In';
+          step = 2;
+        } else {
+          errorMsg.style.display = 'block';
+          errorMsg.innerText = 'Account not found for this alias.';
+        }
+      } else if (step === 2) {
+        const passInput = document.getElementById('password').value;
+        if (passInput === 'Ritesh123') {
+          document.getElementById('login-wrapper').style.display = 'none';
+          document.getElementById('dashboard-wrapper').style.display = 'block';
+          renderDay('Aug_20'); 
+        } else {
+          errorMsg.style.display = 'block';
+          errorMsg.innerText = 'Incorrect password.';
+        }
+      }
+    }
+
+    // --- NAVIGATION LOGIC ---
+    function showView(viewId) {
+      document.querySelectorAll('.app-view').forEach(view => {
+        view.classList.remove('active');
+      });
+      const targetView = document.getElementById(viewId);
+      if(targetView) {
+        targetView.classList.add('active');
+      }
+    }
+
+    // --- CALENDAR LOGIC (HOME VIEW) ---
+    const data = {
+      'Jul_25': {
+        heading: "Saturday, Jul 25",
+        punches: [
+          { type: "In", time: "1:48 AM", date: "Jul 25" },
+          { type: "Out", time: "6:00 AM", date: "Jul 25" },
+          { type: "In", time: "6:30 AM", date: "Jul 25" },
+          { type: "Out", time: "9:34 AM", date: "Jul 25" },
+          { type: "Time off", time: "9:33 AM - 12:20 PM", date: "" }
+        ]
+      },
+      'Jul_26': {
+        heading: "Sunday, Jul 26",
+        punches: [
+          { type: "In", time: "1:55 AM", date: "Jul 26" },
+          { type: "Out", time: "6:03 AM", date: "Jul 26" },
+          { type: "In", time: "6:33 AM", date: "Jul 26" },
+          { type: "Out", time: "8:42 AM", date: "Jul 26" },
+          { type: "Time off", time: "8:42 AM - 12:20 PM", date: "" }
+        ]
+      },
+      'Jul_28': {
+        heading: "Tuesday, Jul 28",
+        punches: [
+          { type: "In", time: "1:52 AM", date: "Jul 28" },
+          { type: "Out", time: "6:01 AM", date: "Jul 28" },
+          { type: "In", time: "6:31 AM", date: "Jul 28" },
+          { type: "Out", time: "12:25 PM", date: "Jul 28" }
+        ]
+      },
+      'Aug_1': {
+        heading: "Saturday, Aug 1",
+        punches: [
+          { type: "In", time: "1:53 AM", date: "Aug 1" },
+          { type: "Out", time: "6:02 AM", date: "Aug 1" },
+          { type: "In", time: "6:34 AM", date: "Aug 1" },
+          { type: "Out", time: "11:58 AM", date: "Aug 1" }
+        ]
+      },
+      'Aug_2': {
+        heading: "Sunday, Aug 2",
+        punches: [
+          { type: "In", time: "2:05 AM", date: "Aug 2" },
+          { type: "Out", time: "5:20 AM", date: "Aug 2" },
+          { type: "In", time: "5:51 AM", date: "Aug 2" },
+          { type: "Out", time: "12:23 PM", date: "Aug 2" }
+        ]
+      },
+      'Aug_3': {
+        heading: "Monday, Aug 3",
+        punches: [
+          { type: "In", time: "1:52 AM", date: "Aug 3" },
+          { type: "Out", time: "5:22 AM", date: "Aug 3" },
+          { type: "In", time: "5:53 AM", date: "Aug 3" },
+          { type: "Out", time: "9:40 AM", date: "Aug 3" },
+          { type: "Time off", time: "9:40 AM - 12:20 PM", date: "" }
+        ]
+      },
+      'Aug_4': {
+        heading: "Tuesday, Aug 4",
+        punches: [
+          { type: "In", time: "1:45 AM", date: "Aug 4" },
+          { type: "Out", time: "5:41 AM", date: "Aug 4" },
+          { type: "In", time: "6:13 AM", date: "Aug 4" },
+          { type: "Out", time: "12:33 PM", date: "Aug 4" }
+        ]
+      },
+      'Aug_5': {
+        heading: "Wednesday, Aug 5",
+        punches: [
+          { type: "In", time: "1:56 PM", date: "Aug 5" },
+          { type: "Out", time: "5:32 PM", date: "Aug 5" },
+          { type: "In", time: "6:03 PM", date: "Aug 5" },
+          { type: "Out", time: "9:01 PM", date: "Aug 5" }
+        ]
+      },
+      'Aug_8': {
+        heading: "Saturday, Aug 8",
+        punches: [
+          { type: "Time off", time: "1:55 AM - 6:46 AM", date: "" },
+          { type: "In", time: "8:49 AM", date: "Aug 8" },
+          { type: "Out", time: "12:21 PM", date: "Aug 8" }
+        ]
+      },
+      'Aug_9': {
+        heading: "Sunday, Aug 9",
+        punches: [
+          { type: "Time off", time: "1:50 AM - 9:40 AM", date: "" },
+          { type: "In", time: "9:37 AM", date: "Aug 9" },
+          { type: "Out", time: "12:20 PM", date: "Aug 9" }
+        ]
+      },
+      'Aug_10': {
+        heading: "Monday, Aug 10",
+        punches: [
+          { type: "In", time: "2:02 AM", date: "Aug 10" },
+          { type: "Out", time: "6:05 AM", date: "Aug 10" },
+          { type: "In", time: "6:35 AM", date: "Aug 10" },
+          { type: "Out", time: "8:26 AM", date: "Aug 10" },
+          { type: "Time off", time: "8:26 AM - 9:17 AM", date: "" },
+          { type: "Time off", time: "9:18 AM - 9:27 AM", date: "" }
+        ]
+      },
+      'Aug_11': {
+        heading: "Tuesday, Aug 11",
+        punches: [
+          { type: "In", time: "1:50 AM", date: "Aug 11" },
+          { type: "Out", time: "5:23 AM", date: "Aug 11" },
+          { type: "In", time: "5:54 AM", date: "Aug 11" },
+          { type: "Out", time: "12:20 PM", date: "Aug 11" }
+        ]
+      },
+      'Aug_15': {
+        heading: "Saturday, Aug 15",
+        punches: [
+          { type: "Time off", time: "1:50 AM - 9:40 AM", date: "" },
+          { type: "In", time: "9:41 AM", date: "Aug 15" },
+          { type: "Out", time: "12:21 PM", date: "Aug 15" }
+        ]
+      },
+      'Aug_16': {
+        heading: "Sunday, Aug 16",
+        punches: [
+          { type: "In", time: "12:50 AM", date: "Aug 16" },
+          { type: "Out", time: "6:00 AM", date: "Aug 16" },
+          { type: "In", time: "6:30 AM", date: "Aug 16" },
+          { type: "Out", time: "11:29 AM", date: "Aug 16" }
+        ]
+      },
+      'Aug_17': {
+        heading: "Monday, Aug 17",
+        punches: [
+          { type: "In", time: "2:05 AM", date: "Aug 17" },
+          { type: "Out", time: "6:05 AM", date: "Aug 17" },
+          { type: "In", time: "6:36 AM", date: "Aug 17" },
+          { type: "Out", time: "12:14 PM", date: "Aug 17" }
+        ]
+      },
+      'Aug_18': {
+        heading: "Tuesday, Aug 18",
+        punches: [
+          { type: "In", time: "1:50 AM", date: "Aug 18" },
+          { type: "Out", time: "6:00 AM", date: "Aug 18" },
+          { type: "In", time: "6:30 AM", date: "Aug 18" },
+          { type: "Out", time: "12:20 PM", date: "Aug 18" }
+        ]
+      },
+      'Aug_19': {
+        heading: "Wednesday, Aug 19",
+        punches: [
+          { type: "In", time: "12:47 AM", date: "Aug 19" },
+          { type: "Out", time: "6:04 AM", date: "Aug 19" }
+        ]
+      },
+      'Aug_20': {
+        heading: "Thursday, Aug 20",
+        punches: [
+          { type: "In", time: "1:49 AM", date: "Aug 20" },
+          { type: "Out", time: "6:04 AM", date: "Aug 20" }
+        ]
+      }
+    };
+
+    function renderDay(dayId) {
+      const selectedData = data[dayId];
+      const rightPanel = document.getElementById('right-panel-content');
+      
+      if (!selectedData) {
+        rightPanel.innerHTML = `<div style="padding: 20px; text-align: center; color: #555;">No punch data available for this date.</div>`;
+        return;
+      }
+      
+      let timelineHTML = '';
+      selectedData.punches.forEach((punch, index) => {
+        const isLast = index === selectedData.punches.length - 1;
+        const isTimeOff = punch.type === 'Time off';
+        const dotClass = isTimeOff ? 'dot green' : 'dot';
+        const actionIcon = isTimeOff ? 'info' : 'edit';
+        const dateHtml = punch.date ? `<div class="date">${punch.date}</div>` : '';
+        
+        timelineHTML += `
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <div class="${dotClass}"></div>
+              ${!isLast ? '<div class="line"></div>' : ''}
+            </div>
+            <div class="timeline-label">
+              <div class="type">${punch.type}</div>
+              ${dateHtml}
+            </div>
+            <div class="timeline-time">${punch.time}</div>
+            <span class="material-symbols-outlined timeline-action">${actionIcon}</span>
+          </div>
+        `;
+      });
+
+      rightPanel.innerHTML = `
+        <div class="date-heading">${selectedData.heading}</div>
+        <div class="punch-card">
+          <div class="punch-card-header">
+            <div class="punch-title">
+              Punch times (${selectedData.punches.length})
+              <span class="material-symbols-outlined info-icon">help</span>
+            </div>
+            <div class="punch-header-right">
+              <a href="#">Missed a punch?</a>
+              <span class="material-symbols-outlined" style="cursor:pointer; font-size:18px;">keyboard_arrow_up</span>
+            </div>
+          </div>
+          <div class="punch-notice">
+            Please note that it may take up to 5 minutes for any changes to appear on this page.
+          </div>
+          <div class="timeline">
+            ${timelineHTML}
+          </div>
+          <div class="card-footer-link">See punch change requests</div>
+          <div class="card-footer-link">See task list</div>
+          <div class="card-footer-link">See timecard</div>
+        </div>
+      `;
+    }
+
+    function selectDay(dayId) {
+      document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
+      const dayElement = document.querySelector(`.cal-day[data-day="${dayId}"]`);
+      if (dayElement) dayElement.classList.add('selected');
+      renderDay(dayId);
+    }
+  </script>
+</body>
+</html>
